@@ -2,7 +2,7 @@ import socket
 import ssl
 
 HOST = "127.0.0.1"
-PORT = 60000
+PORT = 1337
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

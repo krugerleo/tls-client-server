@@ -6,7 +6,7 @@ from tls_server import HOST as SERVER_HOST
 from tls_server import PORT as SERVER_PORT
 
 HOST = "127.0.0.1"
-PORT = 60002
+PORT = 1337
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

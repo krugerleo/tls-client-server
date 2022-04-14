@@ -6,22 +6,25 @@ var fs = require('fs');
 const PORT = 1337;
 const HOST = '127.0.0.1'
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-
 var options = {
     key: fs.readFileSync('../pem/private-key.pem'),
     cert: fs.readFileSync('../pem/public-cert.pem'),
-    rejectUnauthorized: false
+    rejectUnauthorized: false,
+    
 };
+
 
 var server = tls.createServer(options, function(socket) {
 
+    
+    // socket.enableTrace();
+
     // Send a friendly message
-    socket.write("I am the server sending you a message.");
+    socket.write("I am the server sending you a message. (Connected confirmation)");
 
     // Print the data that we received
     socket.on('data', function(data) {
-
+        
         console.log('Received: %s [it is %d bytes long]',
             data.toString().replace(/(\n)/gm,""),
             data.length);
@@ -53,3 +56,5 @@ server.on('error', function(error) {
     server.destroy();
 
 });
+
+
