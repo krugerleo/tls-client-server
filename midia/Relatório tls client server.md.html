@@ -1,0 +1,261 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Relatório tls client server.md</title><style></style></head><body id="preview">
+<h1 class="code-line" data-line-start=0 data-line-end=1><a id="Relatrio_TLS_Client_Server_0"></a>Relatório TLS Client Server</h1>
+<p class="has-line-data" data-line-start="1" data-line-end="3">Aluno: Leonardo Bueno Nogueira Kruger GRR: 20180130<br>
+Relatório sobre a construção de um sistema cliente/servidor seguro com TLS.</p>
+<h2 class="code-line" data-line-start=4 data-line-end=5><a id="Informaes_4"></a>Informações</h2>
+<p class="has-line-data" data-line-start="5" data-line-end="7">Tecnologia: Node js<br>
+Biblioteca: <a href="https://nodejs.org/api/tls.html">https://nodejs.org/api/tls.html</a></p>
+<h2 class="code-line" data-line-start=7 data-line-end=8><a id="Elucidao_de_todo_o_projeto_7"></a>Elucidação de todo o projeto</h2>
+<h4 class="code-line" data-line-start=8 data-line-end=9><a id="Criao_de_chaves_e_certificado_8"></a>Criação de chaves e certificado</h4>
+<p class="has-line-data" data-line-start="9" data-line-end="11">Fonte: <a href="https://riptutorial.com/node-js/example/19326/tls-socket--server-and-client">https://riptutorial.com/node-js/example/19326/tls-socket–server-and-client</a><br>
+para geração da private key</p>
+<p class="has-line-data" data-line-start="12" data-line-end="13"><code>openssl genrsa -out private-key.pem 2048</code></p>
+<p class="has-line-data" data-line-start="14" data-line-end="15">para geração do CSR (certificate signing request)</p>
+<p class="has-line-data" data-line-start="16" data-line-end="17"><code>openssl req -new -key private-key.pem -out csr.pem</code></p>
+<p class="has-line-data" data-line-start="18" data-line-end="19">para geração do certificado publico</p>
+<p class="has-line-data" data-line-start="20" data-line-end="21"><code>openssl x509 -req -in csr.pem -signkey private-key.pem -out public-cert.pem</code></p>
+<h4 class="code-line" data-line-start=21 data-line-end=22><a id="Execuo_21"></a>Execução</h4>
+<p class="has-line-data" data-line-start="22" data-line-end="24">Após gerar as chaves confira a configuração de PORT e HOST levando em conta a explicação do projeto.<br>
+Execute:</p>
+<pre><code class="has-line-data" data-line-start="25" data-line-end="27" class="language-console"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e98f8686a98b889b">[email&#160;protected]</a>:~$ node servertls.js
+</code></pre>
+<p class="has-line-data" data-line-start="27" data-line-end="28">Em outro terminal:</p>
+<pre><code class="has-line-data" data-line-start="29" data-line-end="31" class="language-console"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="9afcf5f5daf8fbe8">[email&#160;protected]</a>:~$ node clienttls.js
+</code></pre>
+<p class="has-line-data" data-line-start="31" data-line-end="32">Devido as API’s de api.js utilizarem chaves secretas esse arquivo não ficara disponivel. Porém o projeto ainda funcionara retornando a mensagem do servidor “Error generating a response”.</p>
+<h4 class="code-line" data-line-start=32 data-line-end=33><a id="Declaraes_e_imports_Servidor_32"></a>Declarações e imports Servidor:</h4>
+<pre><code class="has-line-data" data-line-start="34" data-line-end="52" class="language-javascript"><span class="hljs-pi">'use strict'</span>;
+
+<span class="hljs-comment">// Imports</span>
+<span class="hljs-keyword">var</span> tls = <span class="hljs-built_in">require</span>(<span class="hljs-string">'tls'</span>); <span class="hljs-comment">// Biblioteca TLS para o servidor e manupulação de sockets</span>
+<span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>); <span class="hljs-comment">// Biblioteca FS para acessar os arquivos .pem</span>
+<span class="hljs-built_in">require</span>(<span class="hljs-string">'./api.js'</span>)(); <span class="hljs-comment">// Arquivo js foi utilizado para criar dados de resposta para enviar</span>
+
+<span class="hljs-comment">// Consts</span>
+<span class="hljs-keyword">const</span> PORT = <span class="hljs-number">1337</span>; <span class="hljs-comment">// Porta do servidor</span>
+<span class="hljs-keyword">const</span> HOST = <span class="hljs-string">'127.0.0.1'</span> <span class="hljs-comment">// host servidor loopback</span>
+
+<span class="hljs-comment">// Options for tls server</span>
+<span class="hljs-keyword">var</span> options = { <span class="hljs-comment">// option é utilizado nas funções createServer e tls.connect</span>
+    key: fs.readFileSync(<span class="hljs-string">'../pem/private-key.pem'</span>), <span class="hljs-comment">// caminho para private key</span>
+    cert: fs.readFileSync(<span class="hljs-string">'../pem/public-cert.pem'</span>), <span class="hljs-comment">// caminho para public cert</span>
+    
+};
+</code></pre>
+<h2 class="code-line" data-line-start=52 data-line-end=53><a id="Funes_servidor_52"></a>Funções servidor:</h2>
+<h4 class="code-line" data-line-start=53 data-line-end=54><a id="_Sigilo__confirmado_com_a_verificao_de_socketencrypted_53"></a>- <strong>Sigilo é confirmado com a verificação de socket.encrypted</strong></h4>
+<p class="has-line-data" data-line-start="54" data-line-end="55"><a href="https://nodejs.org/api/tls.html#tlssocketencrypted">https://nodejs.org/api/tls.html#tlssocketencrypted</a></p>
+<h4 class="code-line" data-line-start=55 data-line-end=56><a id="_Autenticidade__confirmado_atraves_de_socketauthorized_55"></a>- <strong>Autenticidade é confirmado atraves de socket.authorized</strong></h4>
+<p class="has-line-data" data-line-start="56" data-line-end="57"><a href="https://nodejs.org/api/tls.html#tlssocketauthorized">https://nodejs.org/api/tls.html#tlssocketauthorized</a></p>
+<pre><code class="has-line-data" data-line-start="59" data-line-end="118" class="language-javascript"><span class="hljs-keyword">var</span> server = tls.createServer(options, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">socket</span>) </span>{
+
+    <span class="hljs-comment">// socket.enableTrace();</span>
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'\x1b[31m%s\x1b[0m'</span>,<span class="hljs-string">"NEW CONNECTION"</span>); <span class="hljs-comment">// Nova conexão</span>
+    <span class="hljs-comment">// Checa se a conesão é autorizada, caso não seja pode ser barrada aqui</span>
+    
+<span class="hljs-comment">//Autenticidade    </span>
+    <span class="hljs-keyword">if</span> (socket.authorized) { 
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Connection authorized by a Certificate Authority."</span>);
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-comment">// Se não autorizada printa </span>
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'\x1b[36m%s\x1b[0m'</span>,<span class="hljs-string">"Connection not authorized: "</span>, socket.authorizationError)
+    }
+
+    
+<span class="hljs-comment">//Sigilo</span>
+    <span class="hljs-comment">// Utilizado para distinguir Sockets TLS de Socket net padrão</span>
+    <span class="hljs-keyword">if</span>(socket.encrypted){
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'\x1b[36m%s\x1b[0m'</span>,<span class="hljs-string">"This is a encrypted TLS Socket instance"</span>);
+    }<span class="hljs-keyword">else</span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'\x1b[36m%s\x1b[0m'</span>,<span class="hljs-string">"This is a regular net.Socket instance"</span>);
+    }
+
+    <span class="hljs-comment">// Quando recebe dados do sockets (application data)</span>
+    socket.on(<span class="hljs-string">'data'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">data</span>) </span>{
+        <span class="hljs-keyword">try</span> { <span class="hljs-comment">// Se no formato e valores especificados gera uma resposta vinda do 'api.js'</span>
+            <span class="hljs-keyword">var</span> x = <span class="hljs-built_in">JSON</span>.parse(data.toString());
+            <span class="hljs-keyword">if</span>(x.data == <span class="hljs-number">1</span>){
+                motivation()
+                    .then(data =&gt; {
+                        socket.write(data);
+                    })
+                    .catch(err =&gt; <span class="hljs-built_in">console</span>.log(err))
+            }<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(x.data == <span class="hljs-number">2</span>){
+                quote()
+                    .then(data =&gt; {
+                        socket.write(data.value);
+                    })
+                    .catch(err =&gt; <span class="hljs-built_in">console</span>.log(err))
+            }<span class="hljs-keyword">else</span>{
+                socket.write(<span class="hljs-string">"Selected option is invalid"</span>);    
+            }    
+        } <span class="hljs-keyword">catch</span> (error) {
+            socket.write(<span class="hljs-string">"Error generating a response"</span>);
+        }
+        
+        <span class="hljs-comment">// Printa os dados recebidos do cliente.</span>
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Received: %s [it is %d bytes long]'</span>,
+            data.toString().replace(<span class="hljs-regexp">/(\n)/gm</span>,<span class="hljs-string">""</span>),
+            data.length);
+
+    });
+    <span class="hljs-comment">// Printa EOT quando a conexão é fechada</span>
+    socket.on(<span class="hljs-string">'end'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'\x1b[31m%s\x1b[0m'</span>,<span class="hljs-string">'EOT (End Of Transmission)\n'</span>);
+    });
+
+});
+</code></pre>
+<h3 class="code-line" data-line-start=118 data-line-end=119><a id="Start_server_e_erro_118"></a>Start server e erro:</h3>
+<pre><code class="has-line-data" data-line-start="120" data-line-end="133" class="language-javascript"><span class="hljs-comment">// Server escutando no endereço e portas especificados.</span>
+server.listen(PORT, HOST, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"I'm listening at %s, on port %s"</span>, HOST, PORT);
+});
+
+<span class="hljs-comment">// Handler para quando ocorre erros no servidor</span>
+server.on(<span class="hljs-string">'error'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">error</span>) </span>{
+    <span class="hljs-built_in">console</span>.error(error);
+    <span class="hljs-comment">// Fecha conexão em caso de erro</span>
+    server.destroy();
+});
+
+</code></pre>
+<h2 class="code-line" data-line-start=134 data-line-end=135><a id="Declaraes_e_imports_CLiente_134"></a>Declarações e imports CLiente:</h2>
+<h4 class="code-line" data-line-start=135 data-line-end=136><a id="_Importante_ressaltar_a_necessidade_de_rejectUnauthorized_false_em_options_caso_contrario_a_bibliteca_TLS_acusa_erro_de_autorizao_DEPTH_ZERO_SELF_SIGNED_CERT_que_est_correto_pois_os_certificado_que_geramos_para_o_projeto_so_assinados_por_nos_e_no_por_um_organizao_confiavel_135"></a>- <strong>Importante ressaltar a necessidade de: “rejectUnauthorized: false” em options, caso contrario a bibliteca TLS acusa erro de autorização ‘DEPTH_ZERO_SELF_SIGNED_CERT’ que está correto pois os certificado que geramos para o projeto são assinados por nos e não por um organização confiavel.</strong></h4>
+<pre><code class="has-line-data" data-line-start="137" data-line-end="157" class="language-javascript"><span class="hljs-pi">'use strict'</span>;
+
+<span class="hljs-comment">// Imports</span>
+<span class="hljs-keyword">var</span> tls = <span class="hljs-built_in">require</span>(<span class="hljs-string">'tls'</span>); <span class="hljs-comment">// Biblioteca TLS para o servidor e manupulação de sockets</span>
+<span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>); <span class="hljs-comment">// Biblioteca FS para acessar os arquivos .pem</span>
+<span class="hljs-keyword">const</span> { exit } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'process'</span>);
+<span class="hljs-keyword">const</span> prompt = <span class="hljs-built_in">require</span>(<span class="hljs-string">'prompt-sync'</span>)({sigint: <span class="hljs-literal">true</span>}); <span class="hljs-comment">// Para leitura de input teclado</span>
+
+<span class="hljs-comment">// Consts</span>
+<span class="hljs-keyword">const</span> PORT = <span class="hljs-number">1337</span>; <span class="hljs-comment">// Porta do servidor</span>
+<span class="hljs-keyword">const</span> HOST = <span class="hljs-string">'127.0.0.1'</span> <span class="hljs-comment">// host servidor loopback</span>
+
+<span class="hljs-comment">// Options for tls server</span>
+<span class="hljs-keyword">var</span> options = { <span class="hljs-comment">// option é utilizado nas funções createServer e tls.connect</span>
+    key: fs.readFileSync(<span class="hljs-string">'../pem/private-key.pem'</span>), <span class="hljs-comment">// caminho para private key</span>
+    cert: fs.readFileSync(<span class="hljs-string">'../pem/public-cert.pem'</span>), <span class="hljs-comment">// caminho para public cert</span>
+    rejectUnauthorized: <span class="hljs-literal">false</span> <span class="hljs-comment">// Importante para que o cliente funcione, caso contrario socket reclama de SELF_SIGNED_CERTIFICATE</span>
+    
+};
+</code></pre>
+<h2 class="code-line" data-line-start=157 data-line-end=158><a id="Funes_Cliente_157"></a>Funções Cliente:</h2>
+<pre><code class="has-line-data" data-line-start="159" data-line-end="217" class="language-javascript"><span class="hljs-keyword">var</span> client = tls.connect(PORT, HOST, options, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    
+    <span class="hljs-comment">// client.enableTrace();</span>
+    <span class="hljs-comment">// Print para inicio de conexão com o servidor</span>
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'\x1b[36m%s\x1b[0m'</span>,<span class="hljs-string">`START CONNECTION AT <span class="hljs-subst">${HOST}</span>, ON PORT <span class="hljs-subst">${PORT}</span>`</span>);
+
+    <span class="hljs-comment">//Checa se está tudo certo com nossa autorização e printa informação</span>
+    <span class="hljs-keyword">if</span> (client.authorized) {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Connection authorized by a Certificate Authority."</span>);
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'\x1b[36m%s\x1b[0m'</span>,<span class="hljs-string">"Connection not authorized: "</span> + client.authorizationError)
+    }
+    
+    <span class="hljs-comment">// Função para criar a str de envio ao servidor</span>
+    <span class="hljs-keyword">var</span> str = makeString();
+    
+    <span class="hljs-comment">// Envia a str para o servidor</span>
+    client.write(str);        
+
+});
+
+<span class="hljs-comment">// Handler para recebimento de dados</span>
+client.on(<span class="hljs-string">"data"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">data</span>) </span>{
+    <span class="hljs-comment">// Printa os dados recebidos e encerra a conexão</span>
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'\x1b[36m%s\x1b[0m'</span>,<span class="hljs-string">'\nReceived: '</span> );
+    <span class="hljs-built_in">console</span>.log( data.toString().replace(<span class="hljs-regexp">/(\n)/gm</span>,<span class="hljs-string">""</span>));
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'\x1b[36m%s\x1b[0m'</span>,<span class="hljs-string">`[it is <span class="hljs-subst">${data.length}</span> bytes long]\n`</span>);
+    client.end();
+
+});
+
+<span class="hljs-comment">// Handler para fechamento de conexão e print para log</span>
+client.on(<span class="hljs-string">'close'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'\x1b[31m%s\x1b[0m'</span>,<span class="hljs-string">"Connection closed"</span>);
+    exit();
+});
+
+<span class="hljs-comment">// Handler para erro e print para log</span>
+client.on(<span class="hljs-string">'error'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">error</span>) </span>{
+
+    <span class="hljs-built_in">console</span>.error(error);
+    
+    <span class="hljs-comment">// Close the connection after the error occurred.</span>
+    client.destroy();
+});
+
+<span class="hljs-comment">// Cria uma string JSON com os dados para o servidor </span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">makeString</span>(<span class="hljs-params"></span>)</span>{
+    <span class="hljs-comment">// Select your type of motivation for today</span>
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"What kind of motivation do you need for today?"</span>);
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"1. Motivation"</span>);
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"2. Chuck noris facts"</span>);
+    <span class="hljs-keyword">var</span> value = prompt(<span class="hljs-string">'type your choice?'</span>);
+    <span class="hljs-comment">// return string formatada</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-string">`{\"message\":\"Im the client sending you a message\",\"data\":<span class="hljs-subst">${value}</span>}`</span>;
+}
+
+</code></pre>
+<h2 class="code-line" data-line-start=218 data-line-end=219><a id="Funcionamento_218"></a>Funcionamento</h2>
+<h4 class="code-line" data-line-start=219 data-line-end=220><a id="Ressaltando_que_mesmo_aps_a_configurao_a_conexo_funciona_porm__tido_como_no_autorizada_devido_ao_certificado_no_ser_assinado_por_uma_organizao_certificada_E_o_servidor_pode_barrar_esse_tipo_de_conexo_nos_testes_realizados_com_socketauthorizedfunesservidor_e_socketencryptedfunesservidor_demonstrando_Sigilo_e_Autenticidade_219"></a>Ressaltando que mesmo após a configuração a conexão funciona porém é tido como não autorizada devido ao certificado não ser assinado por uma organização certificada. E o servidor pode barrar esse tipo de conexão nos testes realizados com <a href="#fun%C3%A7%C3%B5es-servidor">socket.authorized</a> e <a href="#fun%C3%A7%C3%B5es-servidor">socket.encrypted</a>, demonstrando Sigilo e Autenticidade.</h4>
+<ul>
+<li class="has-line-data" data-line-start="220" data-line-end="221">Inicializamos o servidor</li>
+<li class="has-line-data" data-line-start="221" data-line-end="222">Ao executar o clinte é iniciada a conexão com client hello e server hello, usuario escolhe a opção de informação a receber;</li>
+<li class="has-line-data" data-line-start="222" data-line-end="223">Então é enviada e estabelecida a conexão com o servidor;</li>
+<li class="has-line-data" data-line-start="223" data-line-end="224">Ocorrem as verificações do socket recebido;</li>
+<li class="has-line-data" data-line-start="224" data-line-end="225">Servidor gera e envia a resposta;</li>
+<li class="has-line-data" data-line-start="225" data-line-end="226">Cliente ao receber a resposta, printa e encerra a coneçxão.</li>
+<li class="has-line-data" data-line-start="226" data-line-end="228">Exemplos:<br>
+<img src="midia/ff.gif" alt="Gif de funcionamento do projeto" title="Funcionamento do cliente servidor tls"></li>
+</ul>
+<pre><code class="has-line-data" data-line-start="229" data-line-end="238" class="language-console"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2d4b42426d4f4c5f">[email&#160;protected]</a>:~$ node servertls.js
+I'm listening at 127.0.0.1, on port 1337
+NEW CONNECTION
+Connection not authorized:  null
+This is a encrypted TLS Socket instance
+Received: {&quot;message&quot;:&quot;Im the client sending you a message&quot;,&quot;data&quot;:2} [it is 58 bytes long]
+EOT (End Of Transmission)
+
+</code></pre>
+<p class="has-line-data" data-line-start="238" data-line-end="239">Em outro terminal:</p>
+<pre><code class="has-line-data" data-line-start="240" data-line-end="255" class="language-console"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="84e2ebebc4e6e5f6">[email&#160;protected]</a>:~$ node clienttls.js
+START CONNECTION AT 127.0.0.1, ON PORT 1337
+Connection not authorized: DEPTH_ZERO_SELF_SIGNED_CERT
+What kind of motivation do you need for today?
+1. Motivation
+2. Chuck noris facts
+type your choice?2
+
+Received: 
+Chuch Norris doesn't breathe air- air breathes Chuck Norris.
+[it is 60 bytes long]
+
+Connection closed
+
+</code></pre>
+<h2 class="code-line" data-line-start=256 data-line-end=257><a id="Observao_Execuo_do_cliente_sem_rejectUnauthorized_false_demonstra_que_precisa_de_um_certificado_valido_para_projetos_reais_256"></a>Observação: Execução do cliente sem “rejectUnauthorized: false”, demonstra que precisa de um certificado valido para projetos reais.</h2>
+<p class="has-line-data" data-line-start="257" data-line-end="258"><img src="midia/error.png" alt="Erro de execução sem rejectUnauthorized" title="Erro de execução cliente rejectUnauthorized: true"></p>
+<h2 class="code-line" data-line-start=259 data-line-end=260><a id="Captura_dos_pacotes_259"></a>Captura dos pacotes</h2>
+<ul>
+<li class="has-line-data" data-line-start="260" data-line-end="262">Wireshark<br>
+<img src="midia/wireshark.png" alt="Pacotes tls capturados pelo wireshark" title="Pacotes tls do projeto capturado pelo wireshark"></li>
+<li class="has-line-data" data-line-start="262" data-line-end="263">Da imagem, os pacotes de uma execução do projeto podemos ver claramente as etapas.</li>
+<li class="has-line-data" data-line-start="263" data-line-end="264">Client Hello;</li>
+<li class="has-line-data" data-line-start="264" data-line-end="265">Server Hello;</li>
+<li class="has-line-data" data-line-start="265" data-line-end="266">Estabelece Cipher;</li>
+<li class="has-line-data" data-line-start="266" data-line-end="267">Conexão estabelecida, para troca de dados;</li>
+<li class="has-line-data" data-line-start="267" data-line-end="268">Application <a href="#dados-encriptados">data enviada criptografada</a> do cliente para servidor;</li>
+<li class="has-line-data" data-line-start="268" data-line-end="269">Application <a href="#dados-encriptados">data enviada criptografada</a> em resposta ao cliente, do servidor para o cliente;</li>
+<li class="has-line-data" data-line-start="269" data-line-end="270">Ao finalizar a conexão é comunicado através dos dois ultimos pacotes( 1 cliente, 1 servidor) application data vistos na imagem.</li>
+</ul>
+<h4 class="code-line" data-line-start=272 data-line-end=273><a id="Atraves_do_socketenableTracehttpsnodejsorgapitlshtmltlssocketenabletrace_podemos_constatar_o_mesmo_sobre_a_comunicao_272"></a>Atraves do <a href="https://nodejs.org/api/tls.html#tlssocketenabletrace">socket.enableTrace()</a> podemos constatar o mesmo sobre a comunicação.</h4>
+<p class="has-line-data" data-line-start="273" data-line-end="274"><img src="midia/traceback.png" alt="socket enable trace" title="socket enable trace"></p>
+<h2 class="code-line" data-line-start=275 data-line-end=276><a id="Dados_encriptados_275"></a>Dados encriptados</h2>
+<p class="has-line-data" data-line-start="276" data-line-end="278"><img src="midia/encrypteddata.png" alt="socket enable trace" title="socket enable trace"><br>
+<img src="midia/encrypted.png" alt="socket enable trace" title="socket enable trace"></p>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script></body></html>
