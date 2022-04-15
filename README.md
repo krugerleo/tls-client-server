@@ -193,3 +193,5 @@ function makeString(){
 ~~~
 
 ## Funcionamento
+#### Inicializamos o servidor, executamos duas vezes o cliente com sucesso.
+![Gif de funcionamento do projeto](midia/ff.gif "Funcionamento do cliente servidor tls")
