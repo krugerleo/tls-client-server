@@ -4,12 +4,6 @@ var tls = require('tls');
 var fs = require('fs');
 const { exit } = require('process');
 const prompt = require('prompt-sync')({sigint: true});
-const logFile = fs.createWriteStream('/client-ssl-keys.log', { flags: 'a' });
-
-const readline = require('readline').createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
 
 const PORT = 1337;
 const HOST = '127.0.0.1'
@@ -17,8 +11,7 @@ const HOST = '127.0.0.1'
 // Pass the certs to the server and let it know to process even unauthorized certs.
 var options = {
     key: fs.readFileSync('../pem/pkey.pem'),
-    cert: fs.readFileSync('../pem/pucert.pem'),
-    rejectUnauthorized: false
+    cert: fs.readFileSync('../pem/pucert.pem')
     
 };
 
@@ -33,15 +26,9 @@ var client = tls.connect(PORT, HOST, options, function() {
     } else {
         console.log("Connection not authorized: " + client.authorizationError)
     }
+
     var str = makeString();
     client.write(str);        
-
-    // get finished message sent 
-    // var message = client.getFinished();
-    // console.log('\x1b[36m%s\x1b[0m',"\nMensagem Normal:",bft); // normal
-    // console.log('\x1b[36m%s\x1b[0m', "Em string: ", bft.toString());
-
-    
 
 });
 
@@ -70,10 +57,6 @@ client.on('error', function(error) {
 
 });
 
-client.on('keylog', (line, tlsSocket) => {
-    logFile.write(line);
-});
-
 function makeString(){
     console.log("What kind of motivation do you need for today?\n");
     console.log("1. Motivation\n");
@@ -82,4 +65,3 @@ function makeString(){
     // Send a friendly message
     return `{\"message\":\"Im the client sending you a message\",\"data\":${value}}`;
 }
-

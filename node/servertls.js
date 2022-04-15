@@ -1,13 +1,16 @@
 'use strict';
 
+// Imports
 var tls = require('tls');
 var fs = require('fs');
+const { Console } = require('console');
 require('./api.js')();
 
+// Consts
 const PORT = 1337;
 const HOST = '127.0.0.1'
-const logFile = fs.createWriteStream('/server-ssl-keys.log', { flags: 'a' });
 
+// Options for tls server
 var options = {
     key: fs.readFileSync('../pem/private-key.pem'),
     cert: fs.readFileSync('../pem/public-cert.pem'),
@@ -19,37 +22,56 @@ var server = tls.createServer(options, function(socket) {
 
     
     // socket.enableTrace();
+    console.log('\x1b[31m%s\x1b[0m',"NEW CONNECTION");
+    //Check if socket is authorized
+    if (socket.authorized) {
+        console.log("Connection authorized by a Certificate Authority.");
+    } else {
+        // if not print the authorizationError
+        console.log('\x1b[36m%s\x1b[0m',"Connection not authorized: ", socket.authorizationError)
+    }
 
-    // Send a friendly message
-    // socket.write("I am the server sending you a message. (Connected confirmation)");
+    // distinguish TLS sockets from regular net.Socket instances.
+    if(socket.encrypted){
+        console.log('\x1b[36m%s\x1b[0m',"This is a encrypted TLS Socket instance");
+    }else{
+        console.log('\x1b[36m%s\x1b[0m',"This is a regular net.Socket instance");
+    }
 
-    // Print the data that we received
+    // On receive make a response and print received
     socket.on('data', function(data) {
-        var x = JSON.parse(data.toString());
-        if(x.data == 1){
-            motivation()
-                .then(data => {
-                    socket.write(data);
-                })
-                .catch(err => console.log(err))
-        }else{
-            quote()
-                .then(data => {
-                    socket.write(data.value);
-                })
-                .catch(err => console.log(err))
+        try {
+            var x = JSON.parse(data.toString());
+            if(x.data == 1){
+                motivation()
+                    .then(data => {
+                        socket.write(data);
+                    })
+                    .catch(err => console.log(err))
+            }else if(x.data == 2){
+                quote()
+                    .then(data => {
+                        socket.write(data.value);
+                    })
+                    .catch(err => console.log(err))
+            }else{
+                socket.write("Selected option is invalid");    
+            }    
+        } catch (error) {
+            socket.write("Error generating a response");
         }
-
+        
+        // Print received data
         console.log('Received: %s [it is %d bytes long]',
             data.toString().replace(/(\n)/gm,""),
             data.length);
 
     });
 
-    // Let us know when the transmission is over
+    // Print EOT when connection is closed
     socket.on('end', function() {
 
-        console.log('EOT (End Of Transmission)');
+        console.log('\x1b[31m%s\x1b[0m','EOT (End Of Transmission)\n');
 
     });
 
@@ -70,11 +92,4 @@ server.on('error', function(error) {
     // Close the connection after the error occurred.
     server.destroy();
 
-});
-
-
-server.on('keylog', (line, tlsSocket) => {
-    if (tlsSocket.remoteAddress !== '...')
-      return; // Only log keys for a particular IP
-    logFile.write(line);
 });

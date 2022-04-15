@@ -4,12 +4,7 @@ var tls = require('tls');
 var fs = require('fs');
 const { exit } = require('process');
 const prompt = require('prompt-sync')({sigint: true});
-const logFile = fs.createWriteStream('/client-ssl-keys.log', { flags: 'a' });
 
-const readline = require('readline').createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
 
 const PORT = 1337;
 const HOST = '127.0.0.1'
@@ -25,38 +20,33 @@ var options = {
 var client = tls.connect(PORT, HOST, options, function() {
     
     // client.enableTrace();
-    // Check if the authorization worked
-    console.log("CONNECTED AT %s, ON PORT %s", HOST,PORT);
+    console.log('\x1b[36m%s\x1b[0m',`START CONNECTION AT ${HOST}, ON PORT ${PORT}`);
 
+    //check if authorized
     if (client.authorized) {
         console.log("Connection authorized by a Certificate Authority.");
     } else {
-        console.log("Connection not authorized: " + client.authorizationError)
+        console.log('\x1b[36m%s\x1b[0m',"Connection not authorized: " + client.authorizationError)
     }
     var str = makeString();
+    // Send message to server
     client.write(str);        
-
-    // get finished message sent 
-    // var message = client.getFinished();
-    // console.log('\x1b[36m%s\x1b[0m',"\nMensagem Normal:",bft); // normal
-    // console.log('\x1b[36m%s\x1b[0m', "Em string: ", bft.toString());
-
-    
 
 });
 
+// Print data received on response
 client.on("data", function(data) {
 
-    console.log('\x1b[36m%s\x1b[0m','\nReceived: %s [it is %d bytes long]\n',
-        data.toString().replace(/(\n)/gm,""),
-        data.length);
+    console.log('\x1b[36m%s\x1b[0m','\nReceived: ' );
+    console.log( data.toString().replace(/(\n)/gm,""));
+    console.log('\x1b[36m%s\x1b[0m',`[it is ${data.length} bytes long]\n`);
     client.end();
 
 });
 
+// Trigger console when socket close
 client.on('close', function() {
-
-    console.log("Connection closed");
+    console.log('\x1b[31m%s\x1b[0m',"Connection closed");
     exit();
 });
 
@@ -70,16 +60,12 @@ client.on('error', function(error) {
 
 });
 
-client.on('keylog', (line, tlsSocket) => {
-    logFile.write(line);
-});
-
+// Create Json String to send and request a information
 function makeString(){
-    console.log("What kind of motivation do you need for today?\n");
-    console.log("1. Motivation\n");
-    console.log("2. Chuck noris facts\n");
+    console.log("What kind of motivation do you need for today?");
+    console.log("1. Motivation");
+    console.log("2. Chuck noris facts");
     var value = prompt('type your choice?');
     // Send a friendly message
     return `{\"message\":\"Im the client sending you a message\",\"data\":${value}}`;
 }
-
