@@ -12,7 +12,12 @@
 // Imports
 var tls = require('tls');
 var fs = require('fs');
-require('./api.js')();
+try {
+    require('./api.js')();    
+} catch (error) {
+    console.log("No module api.js but still work");
+}
+
 
 // Consts
 const PORT = 1337;
