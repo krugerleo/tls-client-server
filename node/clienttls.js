@@ -27,6 +27,7 @@ var client = tls.connect(PORT, HOST, options, function() {
     // client.enableTrace();
     // Check if the authorization worked
     console.log("CONNECTED AT %s, ON PORT %s", HOST,PORT);
+
     if (client.authorized) {
         console.log("Connection authorized by a Certificate Authority.");
     } else {
@@ -36,20 +37,28 @@ var client = tls.connect(PORT, HOST, options, function() {
     // console.log(`Hey there ${name}`);
 
     // Send a friendly message
-    client.write(`I am the client sending you a message`);    
+    var str = "I am the client sending you a message";
+    var bft = Buffer.from(str);
+    client.write(str);    
+
+    // get last message sent 
     var message = client.getFinished();
 
-    console.log(message.toString());
+    console.log('\x1b[36m%s\x1b[0m',"\nMensagem Normal:",bft); // normal
+    console.log('\x1b[36m%s\x1b[0m', "Em string: ", bft.toString());
+    console.log('\x1b[36m%s\x1b[0m',"\nMensagem Cripto:",message); // criptografada;
+    console.log('\x1b[36m%s\x1b[0m',"Em string: ", message.toString());
+
 
 });
 
 client.on("data", function(data) {
-    console.log(data);
-    console.log('Received: %s [it is %d bytes long]',
+
+    console.log('\nReceived: %s [it is %d bytes long]\n',
         data.toString().replace(/(\n)/gm,""),
         data.length);
 
-    // client.end();
+    client.end();
 
 });
 
