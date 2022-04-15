@@ -16,8 +16,8 @@ const HOST = '127.0.0.1'
 
 // Pass the certs to the server and let it know to process even unauthorized certs.
 var options = {
-    key: fs.readFileSync('../pem/private-key.pem'),
-    cert: fs.readFileSync('../pem/public-cert.pem'),
+    key: fs.readFileSync('../pem/pkey.pem'),
+    cert: fs.readFileSync('../pem/pucert.pem'),
     rejectUnauthorized: false
     
 };

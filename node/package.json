@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "axios": "^0.26.1",
     "prompt-sync": "^4.2.0"
   }
 }
