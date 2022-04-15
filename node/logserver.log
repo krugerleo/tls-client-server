@@ -1,0 +1,16 @@
+kruger@kruger-Ubuntu:~/Clones/tls-client-server/node$ node servertls.js 
+I'm listening at 127.0.0.1, on port 1337
+NEW CONNECTION
+Connection not authorized:  null
+This is a encrypted TLS Socket instance
+Received: {"message":"Im the client sending you a message","data":2} [it is 58 bytes long]
+EOT (End Of Transmission)
+
+NEW CONNECTION
+Connection not authorized:  null
+This is a encrypted TLS Socket instance
+Received: {"message":"Im the client sending you a message","data":1} [it is 58 bytes long]
+EOT (End Of Transmission)
+
+
+

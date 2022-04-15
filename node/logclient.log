@@ -1,0 +1,26 @@
+kruger@kruger-Ubuntu:~/Clones/tls-client-server/node$ node clienttls.js 
+START CONNECTION AT 127.0.0.1, ON PORT 1337
+Connection not authorized: DEPTH_ZERO_SELF_SIGNED_CERT
+What kind of motivation do you need for today?
+1. Motivation
+2. Chuck noris facts
+type your choice?2
+
+Received: 
+Wild horses and bulls TRY to ride Chuck Norris
+[it is 46 bytes long]
+
+Connection closed
+kruger@kruger-Ubuntu:~/Clones/tls-client-server/node$ node clienttls.js 
+START CONNECTION AT 127.0.0.1, ON PORT 1337
+Connection not authorized: DEPTH_ZERO_SELF_SIGNED_CERT
+What kind of motivation do you need for today?
+1. Motivation
+2. Chuck noris facts
+type your choice?1
+
+Received: 
+"In the sky, there is no distinction of east and west; people create distinctions out of their own minds and then believe them to be true."-Buddha
+[it is 147 bytes long]
+
+Connection closed
