@@ -27,7 +27,7 @@ var options = {
 
 var client = tls.connect(PORT, HOST, options, function() {
     
-    client.enableTrace();
+    // client.enableTrace();
     console.log('\x1b[36m%s\x1b[0m',`START CONNECTION AT ${HOST}, ON PORT ${PORT}`);
 
     //check if authorized

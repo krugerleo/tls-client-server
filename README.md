@@ -6,6 +6,30 @@ Relatório sobre a construção de um sistema cliente/servidor seguro com TLS.
 Tecnologia: Node js
 Biblioteca: https://nodejs.org/api/tls.html
 ## Elucidação de todo o projeto 
+#### Criação de chaves e certificado
+Fonte: https://riptutorial.com/node-js/example/19326/tls-socket--server-and-client
+para geração da private key
+
+`openssl genrsa -out private-key.pem 2048`
+
+para geração do CSR (certificate signing request)
+
+`openssl req -new -key private-key.pem -out csr.pem`
+
+para geração do certificado publico
+
+`openssl x509 -req -in csr.pem -signkey private-key.pem -out public-cert.pem`
+#### Execução
+Após gerar as chaves confira a configuração de PORT e HOST levando em conta a explicação do projeto.
+Execute:
+```console
+foo@bar:~$ node servertls.js
+```
+Em outro terminal:
+```console
+foo@bar:~$ node clienttls.js
+```
+Devido as API's de api.js utilizarem chaves secretas esse arquivo não ficara disponivel. Porém o projeto ainda funcionara retornando a mensagem do servidor "Error generating a response".
 #### Declarações e imports Servidor:
 ~~~javascript
 'use strict';
@@ -200,9 +224,37 @@ function makeString(){
 - Ocorrem as verificações do socket recebido;
 - Servidor gera e envia a resposta;
 - Cliente ao receber a resposta, printa e encerra a coneçxão.
+- Exemplos:
 ![Gif de funcionamento do projeto](midia/ff.gif "Funcionamento do cliente servidor tls")
+```console
+foo@bar:~$ node servertls.js
+I'm listening at 127.0.0.1, on port 1337
+NEW CONNECTION
+Connection not authorized:  null
+This is a encrypted TLS Socket instance
+Received: {"message":"Im the client sending you a message","data":2} [it is 58 bytes long]
+EOT (End Of Transmission)
 
-## Execução do cliente sem "rejectUnauthorized: false", demonstra que precisa de um certificado valido para projetos reais.
+```
+Em outro terminal:
+```console
+foo@bar:~$ node clienttls.js
+START CONNECTION AT 127.0.0.1, ON PORT 1337
+Connection not authorized: DEPTH_ZERO_SELF_SIGNED_CERT
+What kind of motivation do you need for today?
+1. Motivation
+2. Chuck noris facts
+type your choice?2
+
+Received: 
+Chuch Norris doesn't breathe air- air breathes Chuck Norris.
+[it is 60 bytes long]
+
+Connection closed
+
+```
+
+## Observação: Execução do cliente sem "rejectUnauthorized: false", demonstra que precisa de um certificado valido para projetos reais.
 ![Erro de execução sem rejectUnauthorized](midia/error.png "Erro de execução cliente rejectUnauthorized: true")
 
 ## Captura dos pacotes 
@@ -216,9 +268,10 @@ function makeString(){
 - Application [data enviada criptografada](#dados-encriptados) do cliente para servidor;
 - Application [data enviada criptografada](#dados-encriptados) em resposta ao cliente, do servidor para o cliente;
 - Ao finalizar a conexão é comunicado através dos dois ultimos pacotes( 1 cliente, 1 servidor) application data vistos na imagem.
-![socket enable trace](midia/traceback.png "socket enable trace")
+
 
 #### Atraves do [socket.enableTrace()](https://nodejs.org/api/tls.html#tlssocketenabletrace) podemos constatar o mesmo sobre a comunicação.
+![socket enable trace](midia/traceback.png "socket enable trace")
 
 ## Dados encriptados
 ![socket enable trace](midia/encrypteddata.png "socket enable trace")
