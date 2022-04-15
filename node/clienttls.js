@@ -1,3 +1,11 @@
+/* --------------------------------------------------------------------------------------
+   Programa que implementa um client TLS feito em NODE js
+
+   Autor: Leonardo Bueno Nogueira Kruger
+   Disciplina: Topicos de redes
+   Data da ultima atualizacao: 15/04/2022
+----------------------------------------------------------------------------------------*/
+
 'use strict';
 
 var tls = require('tls');

@@ -1,9 +1,17 @@
+/* --------------------------------------------------------------------------------------
+   Programa que implementa um servidor TLS feito em NODE js
+
+   Autor: Leonardo Bueno Nogueira Kruger
+   Disciplina: Topicos de redes
+   Data da ultima atualizacao: 15/04/2022
+----------------------------------------------------------------------------------------*/
+
+
 'use strict';
 
 // Imports
 var tls = require('tls');
 var fs = require('fs');
-const { Console } = require('console');
 require('./api.js')();
 
 // Consts
