@@ -37,7 +37,11 @@ Devido as API's de api.js utilizarem chaves secretas esse arquivo não ficara di
 // Imports
 var tls = require('tls'); // Biblioteca TLS para o servidor e manupulação de sockets
 var fs = require('fs'); // Biblioteca FS para acessar os arquivos .pem
-require('./api.js')(); // Arquivo js foi utilizado para criar dados de resposta para enviar
+try {
+    require('./api.js')();    // Arquivo js foi utilizado para criar dados de resposta para enviar
+} catch (error) {
+    console.log("No module api.js but still work"); // Funciona mesmo sem o arquivo porém não retorna resposta da api.
+}
 
 // Consts
 const PORT = 1337; // Porta do servidor
