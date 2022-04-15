@@ -29,7 +29,7 @@ var options = {
 var server = tls.createServer(options, function(socket) {
 
     
-    // socket.enableTrace();
+    socket.enableTrace();
     console.log('\x1b[31m%s\x1b[0m',"NEW CONNECTION");
     //Check if socket is authorized
     if (socket.authorized) {

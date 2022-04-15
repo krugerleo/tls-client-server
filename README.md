@@ -26,7 +26,7 @@ var options = { // option é utilizado nas funções createServer e tls.connect
     
 };
 ~~~
-### Funções servidor:
+## Funções servidor:
 #### - **Sigilo é confirmado com a verificação de socket.encrypted**
 https://nodejs.org/api/tls.html#tlssocketencrypted
 #### - **Autenticidade é confirmado atraves de socket.authorized** 
@@ -193,5 +193,34 @@ function makeString(){
 ~~~
 
 ## Funcionamento
-#### Inicializamos o servidor, executamos duas vezes o cliente com sucesso.
+#### Ressaltando que mesmo após a configuração a conexão funciona porém é tido como não autorizada devido ao certificado não ser assinado por uma organização certificada. E o servidor pode barrar esse tipo de conexão nos testes realizados com [socket.authorized](#funções-servidor) e [socket.encrypted](#funções-servidor), demonstrando Sigilo e Autenticidade.
+- Inicializamos o servidor
+- Ao executar o clinte é iniciada a conexão com client hello e server hello, usuario escolhe a opção de informação a receber;
+- Então é enviada e estabelecida a conexão com o servidor;
+- Ocorrem as verificações do socket recebido;
+- Servidor gera e envia a resposta;
+- Cliente ao receber a resposta, printa e encerra a coneçxão.
 ![Gif de funcionamento do projeto](midia/ff.gif "Funcionamento do cliente servidor tls")
+
+## Execução do cliente sem "rejectUnauthorized: false", demonstra que precisa de um certificado valido para projetos reais.
+![Erro de execução sem rejectUnauthorized](midia/error.png "Erro de execução cliente rejectUnauthorized: true")
+
+## Captura dos pacotes 
+- Wireshark
+![Pacotes tls capturados pelo wireshark](midia/wireshark.png "Pacotes tls do projeto capturado pelo wireshark")
+- Da imagem, os pacotes de uma execução do projeto podemos ver claramente as etapas.
+- Client Hello;
+- Server Hello;
+- Estabelece Cipher;
+- Conexão estabelecida, para troca de dados;
+- Application [data enviada criptografada](#dados-encriptados) do cliente para servidor;
+- Application [data enviada criptografada](#dados-encriptados) em resposta ao cliente, do servidor para o cliente;
+- Ao finalizar a conexão é comunicado através dos dois ultimos pacotes( 1 cliente, 1 servidor) application data vistos na imagem.
+![socket enable trace](midia/traceback.png "socket enable trace")
+
+#### Atraves do [socket.enableTrace()](https://nodejs.org/api/tls.html#tlssocketenabletrace) podemos constatar o mesmo sobre a comunicação.
+
+## Dados encriptados
+![socket enable trace](midia/encrypteddata.png "socket enable trace")
+![socket enable trace](midia/encrypted.png "socket enable trace")
+ 
